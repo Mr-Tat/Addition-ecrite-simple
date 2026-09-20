@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Addition 1 — Addition écrite</title>
+<title>Addition simple — Addition écrite</title>
 <style>
 :root{
   --bg:#0b1220;--panel:#172033;--panel2:#1d2940;--ink:#f8fafc;--muted:#b8c4d8;--line:#94a3b8;
@@ -2350,17 +2350,17 @@ body.light-mode .hard-level-card h3 strong{
 
 <main class="app">
 <header>
-  <h1>Addition 1</h1>
+  <h1>Addition simple</h1>
   <div class="subtitle-row">
   <p class="subtitle">Deux additions à la fois, avec saisie chiffre par chiffre et retenues.</p>
-  <span class="app-version">v25</span>
+  <span class="app-version">v27</span>
 </div>
 </header>
 
 <section id="menuScreen" class="panel menu-panel">
   <div class="menu-heading">
     <h2>Choisis ton mode</h2>
-    <p>La taille choisie est la taille <strong>maximale des nombres à additionner</strong>.</p>
+    <p>Choisis un <strong>niveau</strong>, puis ton type de partie.</p>
   </div>
 
   <div class="mode-grid">
@@ -2369,7 +2369,7 @@ body.light-mode .hard-level-card h3 strong{
       <h3 class="mode-title">Entraînement</h3>
       <p class="mode-description">Deux additions à la fois, sans points et sans limite. L’indice aide uniquement pour la retenue.</p>
       <div class="mode-settings">
-        <label for="trainingMaxDigits">Taille MAX</label>
+        <label for="trainingMaxDigits">Niveau</label>
         <select id="trainingMaxDigits"></select>
         <button class="btn btn-training" id="startTraining" type="button">S’entraîner</button>
       </div>
@@ -2389,7 +2389,7 @@ body.light-mode .hard-level-card h3 strong{
       </div>
       <div class="score-memory hidden" id="bestClassicScore"></div>
       <div class="mode-settings">
-        <label for="classicMaxDigits">Taille MAX</label>
+        <label for="classicMaxDigits">Niveau</label>
         <select id="classicMaxDigits"></select>
         <button class="btn btn-primary" id="startClassic" type="button">Lancer les 10 calculs</button>
       </div>
@@ -2401,7 +2401,7 @@ body.light-mode .hard-level-card h3 strong{
       <p class="mode-description">Deux additions à la fois. La première réponse fausse arrête immédiatement la partie.</p>
       <div class="score-memory hidden" id="bestSuddenScore"></div>
       <div class="mode-settings">
-        <label for="suddenMaxDigits">Taille MAX</label>
+        <label for="suddenMaxDigits">Niveau</label>
         <select id="suddenMaxDigits"></select>
         <button class="btn btn-gold" id="startSudden" type="button">Lancer la mort subite</button>
       </div>
@@ -2462,6 +2462,31 @@ body.light-mode .hard-level-card h3 strong{
 </section>
 </main>
 
+<script>
+function enregistrerScoreMathas(score, total, niveau) {
+  const key = "mathas_scores_" + window.location.pathname.toLowerCase();
+
+  let scores = [];
+
+  try {
+    scores = JSON.parse(localStorage.getItem(key)) || [];
+  } catch {
+    scores = [];
+  }
+
+  scores.unshift({
+    score,
+    total,
+    niveau,
+    date: new Date().toISOString()
+  });
+
+  localStorage.setItem(
+    key,
+    JSON.stringify(scores.slice(0, 3))
+  );
+}
+</script>
 <script>
 (() => {
   const $=id=>document.getElementById(id);
@@ -2621,10 +2646,12 @@ body.light-mode .hard-level-card h3 strong{
   buildScoreRuler();
 
   /* MENU / SCORES */
-  function fillSelect(s){for(let n=2;n<=8;n++){const o=document.createElement('option');o.value=n;o.textContent=`${n} chiffres max`;s.appendChild(o)}}
+  function fillSelect(s){[[3,'Niveau 1'],[5,'Niveau 2'],[7,'Niveau 3']].forEach(([value,label])=>{const o=document.createElement('option');o.value=value;o.textContent=label;s.appendChild(o)})}
+  function normalizeLevelMax(v){v=+v||5;return v<=3?3:v<=5?5:7}
+  function normalLevelFromMax(v){return +v===3?1:+v===5?2:3}
   fillSelect(classicMaxDigits);fillSelect(suddenMaxDigits);fillSelect(trainingMaxDigits);
   const settings=safeGet(STORAGE.settings,{classicMax:5,suddenMax:5,trainingMax:5,classicCount:10});
-  classicMaxDigits.value=settings.classicMax||5;suddenMaxDigits.value=settings.suddenMax||5;trainingMaxDigits.value=settings.trainingMax||5;
+  classicMaxDigits.value=normalizeLevelMax(settings.classicMax);suddenMaxDigits.value=normalizeLevelMax(settings.suddenMax);trainingMaxDigits.value=normalizeLevelMax(settings.trainingMax);
   function selectedClassicCount(){return +(classicCountButtons.find(b=>b.classList.contains('active'))?.dataset.count||10)}
   function updateClassicCountUI(n){
     classicCountButtons.forEach(b=>{const on=+b.dataset.count===+n;b.classList.toggle('active',on);b.setAttribute('aria-pressed',on?'true':'false')});
@@ -2636,19 +2663,19 @@ body.light-mode .hard-level-card h3 strong{
   function suddenScoreStore(){return safeGet(STORAGE.sudden,{})}
   function renderClassicScores(){
     const scores=classicScoreStore(),usage=rulerUsageStore().classic,rows=[];
-    for(let n=2;n<=8;n++){
+    for(const n of [3,5,7]){
       const row=scores[n];if(!row)continue;const used=usage[n]||{};
       const pills=[4,10,20].map(c=>{
         const v=Number(row[c]);return Number.isFinite(v)?`<span class="classic-best-pill score-${c}${used[c]?' ruler-used-score':''}">${v}/${c}</span>`:''
       }).filter(Boolean);
-      if(pills.length)rows.push(`<div class="classic-best-row"><span>${n} chiffres max</span><div class="classic-best-line">${pills.join('')}</div></div>`)
+      if(pills.length)rows.push(`<div class="classic-best-row"><span>Niveau ${normalLevelFromMax(n)}</span><div class="classic-best-line">${pills.join('')}</div></div>`)
     }
     if(!rows.length){bestClassicScore.innerHTML='';bestClassicScore.classList.add('hidden');return}
     bestClassicScore.innerHTML='<div class="score-memory-title">Meilleurs scores</div>'+rows.join('');bestClassicScore.classList.remove('hidden')
   }
   function renderSuddenScores(){
     const scores=suddenScoreStore(),usage=rulerUsageStore().sudden,rows=[];
-    for(let n=2;n<=8;n++){const v=Number(scores[n]);if(Number.isFinite(v))rows.push(`<div class="score-line"><span>${n} chiffres max</span><strong class="${usage[n]?'ruler-used-score':''}">${v}</strong></div>`)}
+    for(const n of [3,5,7]){const v=Number(scores[n]);if(Number.isFinite(v))rows.push(`<div class="score-line"><span>Niveau ${normalLevelFromMax(n)}</span><strong class="${usage[n]?'ruler-used-score':''}">${v}</strong></div>`)}
     if(!rows.length){bestSuddenScore.innerHTML='';bestSuddenScore.classList.add('hidden');return}
     bestSuddenScore.innerHTML='<div class="score-memory-title">Meilleurs scores</div>'+rows.join('');bestSuddenScore.classList.remove('hidden')
   }
@@ -2695,7 +2722,7 @@ body.light-mode .hard-level-card h3 strong{
   function startSession(mode){
     setScoreRulerVisible(false);saveSettings();
     const maxDigits=mode==='classic'?+classicMaxDigits.value:mode==='sudden'?+suddenMaxDigits.value:+trainingMaxDigits.value;
-    session={mode,maxDigits,totalCalculs:mode==='classic'?selectedClassicCount():null,score:0,completed:0,rulerUsed:false};
+    session={mode,maxDigits,level:normalLevelFromMax(maxDigits),totalCalculs:mode==='classic'?selectedClassicCount():null,score:0,completed:0,rulerUsed:false};
     menuScreen.classList.add('hidden');gameScreen.classList.remove('hidden');makePair()
   }
   function goMenu(){removeCelebrations();setScoreRulerVisible(false);gameScreen.classList.add('hidden');menuScreen.classList.remove('hidden');refreshMenuScores();window.scrollTo({top:0,behavior:'smooth'})}
@@ -2909,7 +2936,7 @@ body.light-mode .hard-level-card h3 strong{
           lockCalc(i);status(i,'Correct','ok');session.score++;session.completed++;newly++;saveSuddenBest()
         }else{
           markErrorsForCorrection(i);phase='ended';setNumpadDisabled(true);resetBtn.disabled=true;setPrimaryLabel('Retour au menu');
-          saveSuddenBest();window.__setLastWork&&window.__setLastWork({label:`Mort subite · ${session.maxDigits} chiffres`,score:String(session.score)});status(i,'Erreur : partie terminée','bad');setFeedback(`Mort subite terminée. Score : ${session.score}.`,'bad');updateBar();return
+          saveSuddenBest();window.__setLastWork&&window.__setLastWork({label:`Mort subite · Niveau ${session.level}`,score:String(session.score)});enregistrerScoreMathas(session.score,session.score+1,`Niveau ${session.level}`);status(i,'Erreur : partie terminée','bad');setFeedback(`Mort subite terminée. Score : ${session.score}.`,'bad');updateBar();return
         }
       }
       if(states.every(s=>s.solved)){
@@ -3011,7 +3038,8 @@ body.light-mode .hard-level-card h3 strong{
     if(isRecord)scores[session.maxDigits][session.totalCalculs]=session.score;safeSet(STORAGE.classic,scores);
     phase='ended';setNumpadDisabled(true);resetBtn.disabled=true;setPrimaryLabel('Retour au menu');
     setFeedback(isRecord?`Nouveau record : ${session.score}/${session.totalCalculs} !`:`Série terminée : ${session.score}/${session.totalCalculs}.`,'ok');
-    window.__setLastWork&&window.__setLastWork({label:`Calculs · ${session.maxDigits} chiffres`,score:`${session.score}/${session.totalCalculs}`});
+    window.__setLastWork&&window.__setLastWork({label:`Calculs · Niveau ${session.level}`,score:`${session.score}/${session.totalCalculs}`});
+    enregistrerScoreMathas(session.score,session.totalCalculs,`Niveau ${session.level}`);
     updateBar();isRecord?showRecordCelebration(session.score,session.totalCalculs):showScoreCelebration(session.score,session.totalCalculs,old)
   }
   function saveSuddenBest(){
@@ -3110,7 +3138,7 @@ body.light-mode .hard-level-card h3 strong{
      !trainingMax||!classicMax||!suddenMax||!startTraining||!startClassic)return;
 
   menuGrid.classList.add('compact-grid');
-  if(menuHeading)menuHeading.innerHTML='Un seul réglage pour <strong>Calculs</strong>, <strong>Entraînement</strong> et <strong>Mort subite</strong>.';
+  if(menuHeading)menuHeading.innerHTML='Choisis un <strong>niveau</strong>, puis ton type de partie.';
 
   /* Thème clair / sombre */
   const THEME_KEY='addition1_theme_mode_v1';
@@ -3144,12 +3172,12 @@ body.light-mode .hard-level-card h3 strong{
 
   if(icon)icon.textContent='⚙️';
   if(title)title.textContent='Réglages';
-  if(desc)desc.textContent='Taille des nombres pour tous les modes.';
+  if(desc)desc.textContent='Le même niveau est utilisé dans tous les modes.';
 
   settingsWrap.innerHTML='';
   const label=document.createElement('label');
   label.setAttribute('for','trainingMaxDigits');
-  label.textContent='Taille des nombres';
+  label.textContent='Niveau';
   const note=document.createElement('p');
   note.className='shared-note';
   note.textContent='Choix commun à tous les modes.';
@@ -3248,7 +3276,7 @@ body.light-mode .hard-level-card h3 strong{
 
 <script>
 (() => {
-  const CFG = {"type": "addition", "title": "Addition 1", "storage": "addition1_hard_sudden_v1", "levels": [{"level": 1, "digits": 10, "addends": 2}, {"level": 2, "digits": 12, "addends": 2}, {"level": 3, "digits": 16, "addends": 2}], "hardSelects": ["trainingMaxDigits"]};
+  const CFG = {"type": "addition", "title": "Addition simple", "storage": "addition1_hard_sudden_v1", "levels": [{"level": 1, "digits": 10, "addends": 2}, {"level": 2, "digits": 12, "addends": 2}, {"level": 3, "digits": 16, "addends": 2}], "hardSelects": ["trainingMaxDigits"]};
   const menuScreen=document.getElementById('menuScreen');
   const gameScreen=document.getElementById('gameScreen');
   const app=document.querySelector('.app');
@@ -3847,7 +3875,7 @@ body.light-mode .hard-level-card h3 strong{
     }
     markHardErrors();
     if(hardSession.mode==='sudden'){
-      saveBest();window.__setLastWork&&window.__setLastWork({label:`HARD LVL ${hardSession.level} · Mort subite · ${hardSession.digits} chiffres`,score:String(hardSession.score)});hardPhase='ended';setHardEnabled(false);clearBtn.disabled=true;
+      saveBest();window.__setLastWork&&window.__setLastWork({label:`HARD LVL ${hardSession.level} · Mort subite · ${hardSession.digits} chiffres`,score:String(hardSession.score)});enregistrerScoreMathas(hardSession.score,hardSession.score+1,`Hard ${hardSession.level}`);hardPhase='ended';setHardEnabled(false);clearBtn.disabled=true;
       primary.textContent='Retour au menu HARD';
       setFeedback(`Erreur : Mort subite terminée. Score : ${hardSession.score}.`,'bad');
       updateHardHeader()
