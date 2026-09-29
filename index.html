@@ -2834,6 +2834,41 @@ body.light-mode .master-mode-reset-note{color:#8b5b54}
 }
 </style>
 
+
+<style id="menuCornerControlsPatch">
+.fullscreen-btn,
+.theme-toggle-btn{
+  position:absolute !important;
+  left:auto !important;
+  right:14px !important;
+  z-index:80 !important;
+}
+.fullscreen-btn{top:12px !important}
+.theme-toggle-btn{top:56px !important}
+
+.top-fixed{
+  position:absolute !important;
+  top:12px !important;
+  left:auto !important;
+  right:14px !important;
+  z-index:80 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-end !important;
+  gap:6px !important;
+}
+
+.app{padding-top:18px !important}
+header{padding-right:175px !important}
+
+@media(max-width:680px){
+  .fullscreen-btn{top:8px !important;right:8px !important}
+  .theme-toggle-btn{top:50px !important;right:8px !important}
+  .top-fixed{top:8px !important;right:8px !important}
+  header{padding-right:145px !important}
+}
+</style>
+
 </head>
 <body>
 <button class="fullscreen-btn" id="fullscreenBtn" type="button" aria-pressed="false">⛶ Plein écran</button>
@@ -2843,7 +2878,7 @@ body.light-mode .master-mode-reset-note{color:#8b5b54}
   <h1>Addition simple</h1>
   <div class="subtitle-row">
   <p class="subtitle">Deux additions à la fois, avec saisie chiffre par chiffre et retenues.</p>
-  <span class="app-version">v2.8</span>
+  <span class="app-version">v2.9</span>
 </div>
 </header>
 
@@ -3692,7 +3727,7 @@ function enregistrerResultatMathas(score, total, niveau, niveauRang) {
   function applyTheme(mode){
     const light=mode==='light';
     document.body.classList.toggle('light-mode',light);
-    themeBtn.textContent=light?'🌙 Activer le mode sombre':'☀️ Activer le mode clair';
+    themeBtn.textContent=light?'Mode sombre':'Mode clair';
     try{localStorage.setItem(THEME_KEY,JSON.stringify(light?'light':'dark'))}catch{}
   }
 
