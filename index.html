@@ -2681,6 +2681,119 @@ body.light-mode .master-mode-input{background:#fff;color:#173047;border-color:#c
 body.light-mode .master-mode-hotspot{background:rgba(255,255,255,.56);color:rgba(25,48,71,.40);border-color:rgba(25,48,71,.12)}
 
 </style>
+
+<style id="masterModeResetStyle">
+.master-mode-input{
+  -webkit-text-security:disc;
+  text-security:disc;
+  letter-spacing:.16em;
+}
+.master-mode-action.master-reset{
+  background:linear-gradient(180deg,#8b3b32,#6e2924)!important;
+  border-color:rgba(255,164,150,.35)!important;
+}
+.master-mode-action.master-reset:hover{
+  filter:brightness(1.08);
+}
+.master-mode-reset-note{
+  margin-top:7px;
+  font-size:.67rem;
+  line-height:1.3;
+  color:#c9a7a2;
+}
+body.light-mode .master-mode-reset-note{color:#8b5b54}
+</style>
+
+
+<style id="uiConsistencyPatch">
+/* Les commandes globales restent attachées au viewport, jamais au contenu défilant. */
+.fullscreen-btn,
+.theme-toggle-btn{
+  position:fixed !important;
+  right:12px !important;
+  z-index:12000 !important;
+}
+.fullscreen-btn{top:10px !important}
+.theme-toggle-btn{top:56px !important}
+
+.top-fixed{
+  position:fixed !important;
+  top:10px !important;
+  right:12px !important;
+  z-index:12000 !important;
+}
+
+/* Le contenu réservé au Master mode ne peut jamais apparaître quand il est inactif. */
+.master-mode-row[hidden],
+.master-mode-reset-note[hidden]{
+  display:none !important;
+}
+
+/* Scores : présents et lisibles, mais moins massifs. */
+#sessionScore{
+  font-size:1.12rem !important;
+  font-weight:900 !important;
+  padding:8px 12px !important;
+}
+.score-memory{
+  font-size:.88rem !important;
+  font-weight:800 !important;
+}
+.score-line strong{
+  font-size:.98rem !important;
+  font-weight:900 !important;
+}
+.hard-session-score:not(.no-score),
+.hard-score:not(.no-score){
+  min-width:118px !important;
+  padding:8px 12px !important;
+  font-size:clamp(1.65rem,3.4vw,2.55rem) !important;
+  line-height:1 !important;
+}
+.hard-record-value{
+  min-width:74px !important;
+  height:60px !important;
+  font-size:clamp(1.9rem,3.5vw,2.65rem) !important;
+}
+
+/* Effet "soleil" plus discret. */
+.sun-score{
+  border-color:rgba(255,209,102,.52) !important;
+  background:rgba(102,72,9,.20) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,209,102,.07),
+    0 0 10px rgba(255,209,102,.10) !important;
+}
+.sun-score::before{
+  inset:-7px !important;
+  opacity:.28 !important;
+}
+.menu-best-sun{
+  padding:2px 6px !important;
+  border-color:rgba(248,214,109,.45) !important;
+  background:rgba(122,86,9,.13) !important;
+  box-shadow:0 0 7px rgba(248,214,109,.09) !important;
+}
+.menu-best-sun::after{
+  margin-left:4px !important;
+  font-size:.72rem !important;
+  opacity:.65 !important;
+}
+.last-work-main.sun-score{
+  padding:5px 8px !important;
+}
+.hard-score.sun::before{
+  inset:-7px !important;
+  opacity:.28 !important;
+}
+
+@media(max-width:680px){
+  .fullscreen-btn{top:8px !important;right:8px !important}
+  .theme-toggle-btn{top:52px !important;right:8px !important}
+  .top-fixed{top:8px !important;right:8px !important}
+}
+</style>
+
 </head>
 <body>
 <button class="fullscreen-btn" id="fullscreenBtn" type="button" aria-pressed="false">⛶ Plein écran</button>
@@ -2690,7 +2803,7 @@ body.light-mode .master-mode-hotspot{background:rgba(255,255,255,.56);color:rgba
   <h1>Addition simple</h1>
   <div class="subtitle-row">
   <p class="subtitle">Deux additions à la fois, avec saisie chiffre par chiffre et retenues.</p>
-  <span class="app-version">v2.5</span>
+  <span class="app-version">v2.7</span>
 </div>
 </header>
 
@@ -4779,12 +4892,14 @@ function enregistrerResultatMathas(score, total, niveau, niveauRang) {
   <div class="master-mode-title">Master mode</div>
   <div class="master-mode-note">Accès de test temporaire. Les scores continuent d’être enregistrés normalement.</div>
   <div class="master-mode-row" id="masterModeLoginRow">
-    <input class="master-mode-input" id="masterModePassword" type="password" autocomplete="off" placeholder="Mot de passe">
+    <input class="master-mode-input" id="masterModePassword" type="password" autocomplete="new-password" spellcheck="false" autocapitalize="off" placeholder="Mot de passe">
     <button class="master-mode-action" id="masterModeUnlock" type="button">Activer</button>
   </div>
   <div class="master-mode-row" id="masterModeActiveRow" hidden>
     <button class="master-mode-action master-off" id="masterModeDisable" type="button">Désactiver le Master mode</button>
+    <button class="master-mode-action master-reset" id="masterModeReset" type="button">Remise à zéro</button>
   </div>
+  <div class="master-mode-reset-note" id="masterModeResetNote" hidden>La remise à zéro efface les scores des séries et les déblocages. Les records de Mort subite sont conservés.</div>
   <div class="master-mode-status" id="masterModeStatus"></div>
 </div>
 
@@ -4803,12 +4918,16 @@ function enregistrerResultatMathas(score, total, niveau, niveauRang) {
   const loginRow=document.getElementById('masterModeLoginRow');
   const activeRow=document.getElementById('masterModeActiveRow');
   const status=document.getElementById('masterModeStatus');
+  const reset=document.getElementById('masterModeReset');
+  const resetNote=document.getElementById('masterModeResetNote');
+  const MASTER_RESET_KEYS=["addition_classic_v1", "addition1_last_work", "mathas_progression_addition_simple_v1"];
 
   function syncMasterUI(message=''){
     const active=!!window.__masterMode;
     hotspot?.classList.toggle('master-active',active);
     if(loginRow)loginRow.hidden=active;
     if(activeRow)activeRow.hidden=!active;
+    if(resetNote)resetNote.hidden=!active;
     if(status){status.classList.remove('bad');status.textContent=message||(active?'MASTER actif · tous les niveaux sont accessibles.':'')}
   }
   function refreshLocks(){setTimeout(()=>window.__refreshProgressionLocks?.(),0)}
@@ -4828,10 +4947,28 @@ function enregistrerResultatMathas(score, total, niveau, niveauRang) {
     syncMasterUI('Master mode désactivé.');
     refreshLocks()
   }
+  function resetToZero(){
+    if(!window.__masterMode)return;
+    const ok=window.confirm(
+      'Remise à zéro ?\n\nLes scores des séries et tous les déblocages seront effacés.\nLes records de Mort subite seront conservés.'
+    );
+    if(!ok)return;
+    try{
+      MASTER_RESET_KEYS.forEach(k=>localStorage.removeItem(k));
+    }catch{}
+    window.__masterMode=false;
+    try{sessionStorage.removeItem(MASTER_SESSION_KEY)}catch{}
+    if(status){
+      status.classList.remove('bad');
+      status.textContent='Remise à zéro effectuée. Les records de Mort subite sont conservés.';
+    }
+    setTimeout(()=>window.location.reload(),280)
+  }
   hotspot?.addEventListener('click',()=>{if(panel){panel.hidden=!panel.hidden;if(!panel.hidden&&!window.__masterMode)setTimeout(()=>input?.focus(),0)}syncMasterUI()});
   unlock?.addEventListener('click',activate);
   input?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();activate()}});
   disable?.addEventListener('click',deactivate);
+  reset?.addEventListener('click',resetToZero);
   document.addEventListener('pointerdown',e=>{
     if(!panel||panel.hidden)return;
     if(e.target===hotspot||panel.contains(e.target))return;
