@@ -2794,6 +2794,46 @@ body.light-mode .master-mode-reset-note{color:#8b5b54}
 }
 </style>
 
+
+<style id="topLeftControlsPatch">
+/* Plein écran + thème : zone fixe et compacte dans le coin supérieur gauche. */
+.fullscreen-btn,
+.theme-toggle-btn{
+  position:fixed !important;
+  left:10px !important;
+  right:auto !important;
+  z-index:2400 !important;
+  max-width:160px !important;
+}
+.fullscreen-btn{top:10px !important}
+.theme-toggle-btn{top:54px !important}
+
+/* Mélange de calculs utilise un conteneur commun. */
+.top-fixed{
+  position:fixed !important;
+  top:10px !important;
+  left:10px !important;
+  right:auto !important;
+  z-index:2400 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  gap:6px !important;
+}
+.top-fixed button{
+  min-width:0 !important;
+  max-width:160px !important;
+  padding:8px 11px !important;
+}
+
+/* Les commandes restent dans leur coin, sans pousser le contenu latéralement. */
+@media(max-width:680px){
+  .fullscreen-btn{top:8px !important;left:8px !important;right:auto !important}
+  .theme-toggle-btn{top:50px !important;left:8px !important;right:auto !important}
+  .top-fixed{top:8px !important;left:8px !important;right:auto !important}
+}
+</style>
+
 </head>
 <body>
 <button class="fullscreen-btn" id="fullscreenBtn" type="button" aria-pressed="false">⛶ Plein écran</button>
@@ -2803,7 +2843,7 @@ body.light-mode .master-mode-reset-note{color:#8b5b54}
   <h1>Addition simple</h1>
   <div class="subtitle-row">
   <p class="subtitle">Deux additions à la fois, avec saisie chiffre par chiffre et retenues.</p>
-  <span class="app-version">v2.7</span>
+  <span class="app-version">v2.8</span>
 </div>
 </header>
 
