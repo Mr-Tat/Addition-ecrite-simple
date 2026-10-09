@@ -4530,6 +4530,30 @@ html.mathas-handheld-portrait #menuScreen .mathas-menu-zone-options,
 html.mathas-handheld-portrait #menuScreen .mathas-menu-zone-tech,
 html.mathas-handheld-portrait #menuScreen .mathas-menu-zone-settings { min-width:0!important;max-width:100%!important; }
 </style>
+<script id="mathas-v534t-navigation-guard">
+/* V5.3.4T — protège le choix manuel d'une case contre les déplacements différés. */
+window.mathasEntryNavigation=(()=>{
+  let epoch=0;
+  const target='input.answer-input,input.carry-input,input.adjust-input,input.side-carry-input,input.side-input,input.hard-answer,input.hard-carry,input.hard-adjust,input.hard-side-carry,input.m2-partial-input,input.m2-sum-input,input.m2-carry-input,input[data-kind]';
+  document.addEventListener('pointerdown',e=>{
+    const el=e.target;
+    if(!(el instanceof Element))return;
+    const wrapper=el.closest('.carry-wrap,.hard-carry-wrap');
+    if(wrapper&&!el.matches('input')){
+      const input=wrapper.querySelector('input:not(:disabled)');
+      if(input){epoch++;e.preventDefault();input.focus({preventScroll:true});return}
+    }
+    if(el.matches(target))epoch++;
+  },true);
+  document.addEventListener('focusin',e=>{
+    if(e.target instanceof Element&&e.target.matches(target))epoch++;
+  },true);
+  return {
+    schedule(fn){const id=++epoch;return requestAnimationFrame(()=>{if(id===epoch)fn()})},
+    later(fn,delay){const id=epoch;return setTimeout(()=>{if(id===epoch)fn()},delay)}
+  };
+})();
+</script>
 </head>
 <body>
 <main class="app">
@@ -4541,7 +4565,7 @@ html.mathas-handheld-portrait #menuScreen .mathas-menu-zone-settings { min-width
 </div>
 <header>
 <h1>Addition</h1>
-<div class="subtitle-row"><span class="app-version"><span class="mathas-version-main">V5</span><span class="mathas-version-detail">.3.1</span></span>
+<div class="subtitle-row"><span class="app-version"><span class="mathas-version-main">V5</span><span class="mathas-version-detail">.3.4T</span></span>
 </div>
 </header>
 <section class="panel menu-panel" id="menuScreen">
@@ -4670,7 +4694,7 @@ html.mathas-handheld-portrait #menuScreen .mathas-menu-zone-settings { min-width
 <div class="master-mode-reset-note" hidden="" id="masterModeResetNote">La remise à zéro efface les scores des séries et les déblocages. Les records de Mort subite sont conservés.</div>
 <div class="master-mode-status" id="masterModeStatus"></div>
 </div>
-<script>window.MathasAppConfig={"appId":"addition-simple","title":"Addition","family":"addition","visibleVersion":"V5.3.1","assets":{"favicon":"https://jftzuslpelgzbdrftszw.supabase.co/storage/v1/object/public/mathas-images/logos/logo-m-1791065253498-qussoz.png","wordmark":"https://jftzuslpelgzbdrftszw.supabase.co/storage/v1/object/public/mathas-images/logos/logo-mot-1791065255634-jznxux.png"},"storage":{"normal":{"classic":"addition_classic_v1","sudden":"addition_sudden_v1","settings":"addition_settings_v1","rulerUsage":"addition_ruler_usage_v1"},"theme":"addition1_theme_mode_v1","hardRecords":"addition1_hard_sudden_v1","hardThree":"addition1_hard_three_v1","lastWork":"addition1_last_work","progression":"mathas_progression_addition_simple_v1","aids":"mathas_aids_addition_simple_v1","masterReset":["addition_classic_v1","addition1_last_work","mathas_progression_addition_simple_v1","addition1_hard_three_v1","addition_ruler_usage_v1","mathas_recent_two_scores_v1_addition-simple"]},"aids":{"defaults":{"ruler":true},"controls":{"ruler":{"button":"scoreRulerBtn","panel":"scoreRuler"}}},"hard":{"type":"addition","title":"Addition simple","levels":[{"level":1,"digits":10,"addends":2},{"level":2,"digits":12,"addends":2},{"level":3,"digits":16,"addends":2}],"hardSelects":["trainingMaxDigits"]},"layers":{"L2":"#menuScreen.menu-panel, #menuScreen .mathas-menu-zone, #gameScreen > .card","L3":".calc-box, .mode-card, .settings-box, .method-card, .choice-card, .level-wrap, .numpad, .hard-numpad, .instruction, .session-bar","L4":"button, input, select, .digit, .digit-cell, .operator, .answer-input, .carry-input, .side-carry-input"}};
+<script>window.MathasAppConfig={"appId":"addition-simple","title":"Addition","family":"addition","visibleVersion":"V5.3.4T","assets":{"favicon":"https://jftzuslpelgzbdrftszw.supabase.co/storage/v1/object/public/mathas-images/logos/logo-m-1791065253498-qussoz.png","wordmark":"https://jftzuslpelgzbdrftszw.supabase.co/storage/v1/object/public/mathas-images/logos/logo-mot-1791065255634-jznxux.png"},"storage":{"normal":{"classic":"addition_classic_v1","sudden":"addition_sudden_v1","settings":"addition_settings_v1","rulerUsage":"addition_ruler_usage_v1"},"theme":"addition1_theme_mode_v1","hardRecords":"addition1_hard_sudden_v1","hardThree":"addition1_hard_three_v1","lastWork":"addition1_last_work","progression":"mathas_progression_addition_simple_v1","aids":"mathas_aids_addition_simple_v1","masterReset":["addition_classic_v1","addition1_last_work","mathas_progression_addition_simple_v1","addition1_hard_three_v1","addition_ruler_usage_v1","mathas_recent_two_scores_v1_addition-simple"]},"aids":{"defaults":{"ruler":true},"controls":{"ruler":{"button":"scoreRulerBtn","panel":"scoreRuler"}}},"hard":{"type":"addition","title":"Addition simple","levels":[{"level":1,"digits":10,"addends":2},{"level":2,"digits":12,"addends":2},{"level":3,"digits":16,"addends":2}],"hardSelects":["trainingMaxDigits"]},"layers":{"L2":"#menuScreen.menu-panel, #menuScreen .mathas-menu-zone, #gameScreen > .card","L3":".calc-box, .mode-card, .settings-box, .method-card, .choice-card, .level-wrap, .numpad, .hard-numpad, .instruction, .session-bar","L4":"button, input, select, .digit, .digit-cell, .operator, .answer-input, .carry-input, .side-carry-input"}};
 
 function estMeilleurResultat(nouveau, ancien) {
   if (!ancien) return true;
@@ -5080,11 +5104,11 @@ function enregistrerResultatMathas(score, total, niveau, niveauRang) {
 
   function focusAnswer(i,c){
     active={kind:'answer',calc:i,col:c};updateNumpadTitle();
-    requestAnimationFrame(()=>{const x=inputFor(i,c);if(x&&!x.disabled){setActiveEntry(x);x.focus({preventScroll:true})}})
+    window.mathasEntryNavigation.schedule(()=>{const x=inputFor(i,c);if(x&&!x.disabled){setActiveEntry(x);x.focus({preventScroll:true})}})
   }
   function focusCarry(i,c){
     active={kind:'carry',calc:i,col:c};updateNumpadTitle();
-    requestAnimationFrame(()=>{const x=carryFor(i,c);if(x&&!x.disabled){setActiveEntry(x);x.focus({preventScroll:true})}})
+    window.mathasEntryNavigation.schedule(()=>{const x=carryFor(i,c);if(x&&!x.disabled){setActiveEntry(x);x.focus({preventScroll:true})}})
   }
   function focusColumnStart(i,c){
     const s=states[i];if(!s||s.solved)return;
@@ -5098,17 +5122,29 @@ function enregistrerResultatMathas(score, total, niveau, niveauRang) {
     if(c<s.answerCount-1){focusColumnStart(i,c+1);return}
     nextCalcOrStay(i)
   }
+
+  // V5.3.4T — Vérification automatique uniquement après remplissage complet
+  let mathasAutoNormalTimer=0;
+  function mathasScheduleNormal(){
+    if(phase!=='answering'||!session||!states?.length)return;
+    const work=states;
+    clearTimeout(mathasAutoNormalTimer);
+    mathasAutoNormalTimer=setTimeout(()=>{
+      if(phase!=='answering'||states!==work)return;
+      if(states.every((s,i)=>s.solved||evaluateCalc(i).filled))handlePrimary();
+    },100);
+  }
   function setAnswerDigit(i,c,d){
     const s=states[i],inp=inputFor(i,c);if(!s||s.solved||!inp||inp.disabled)return;
     inp.value=d;s.answerValues[c]=d;inp.classList.remove('incorrect');s.wrongHistory[c]='';
     const wh=opFor(i).querySelector(`[data-wrong="${c}"]`);if(wh)wh.textContent='';
-    afterAnswer(i,c)
+    afterAnswer(i,c);mathasScheduleNormal()
   }
   function setCarryDigit(i,c,d){
     const s=states[i],inp=carryFor(i,c);if(!s||s.solved||!inp||inp.disabled)return;
     inp.value=d;s.carryValues[c]=d;inp.classList.add('filled');inp.classList.remove('bad');s.carryWrong[c]='';
     const wh=opFor(i).querySelector(`[data-carry-wrong="${c}"]`);if(wh)wh.textContent='';
-    tensFirstEnabled()&&c>0?focusAnswer(i,c-1):focusAnswer(i,c)
+    tensFirstEnabled()&&c>0?focusAnswer(i,c-1):focusAnswer(i,c);mathasScheduleNormal()
   }
 
   function mathasEntryValue(s,t){
@@ -6275,10 +6311,22 @@ function hardThreeScore(level){
     padTitle.textContent=kind==='carry'?'Écris la retenue':'Clavier tactile'
   }
   function focusHard(kind,col){
-    requestAnimationFrame(()=>setHardActive(inputFor(kind,col),kind,col))
+    window.mathasEntryNavigation.schedule(()=>setHardActive(inputFor(kind,col),kind,col))
   }
   const hardTensFirst=()=>!!window.__mathasTensFirst;
   function focusHardColumn(c){if(!hardState)return;if(hardTensFirst()&&c<hardState.count-1&&hardState.outgoing[c]>0&&hardState.carries[c+1]!==String(hardState.outgoing[c]))focusHard('carry',c+1);else focusHard('answer',c)}
+
+  // V5.3.4T — Même règle sur l'unique calcul affiché en HARD
+  let mathasAutoHardTimer=0;
+  function mathasScheduleHard(){
+    if(hardPhase!=='answering'||!hardState||!hardSession)return;
+    const work=hardState;
+    clearTimeout(mathasAutoHardTimer);
+    mathasAutoHardTimer=setTimeout(()=>{
+      if(hardPhase!=='answering'||hardState!==work)return;
+      if(evaluateHard().filled)hardPrimaryAction();
+    },100);
+  }
   function enterDigit(d){
     if(hardPhase!=='answering'||!hardActive)return;
     const {kind,col}=hardActive,inp=inputFor(kind,col);
@@ -6294,6 +6342,7 @@ function hardThreeScore(level){
       const wh=op.querySelector(`[data-wrong-carry="${col}"]`);if(wh)wh.textContent='';
       hardTensFirst()&&col>0?focusHard('answer',col-1):focusHard('answer',col)
     }
+    mathasScheduleHard();
   }
   function hardEntrySequence(){
     const seq=[];for(let c=0;c<hardState.answerCount;c++){if(hardTensFirst()){if(c<hardState.count-1&&hardState.outgoing[c]>0)seq.push({kind:'carry',col:c+1});seq.push({kind:'answer',col:c})}else{seq.push({kind:'answer',col:c});if(c<hardState.count-1&&hardState.outgoing[c]>0)seq.push({kind:'carry',col:c+1})}}return seq
@@ -7187,6 +7236,131 @@ function hardThreeScore(level){
   /* Indice utilise désormais directement la même bulle que Guide :
      aucune conversion en fenêtre modale n'est nécessaire ici. */
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeMathasInfoModal(); const ol=document.querySelector('.mathas-hint-overlay[data-modalized="1"]'); if(ol) ol.remove(); } });
+})();
+</script>
+<script id="mathas-v533T-reconcile-history">
+/* V5.3.4T : réconciliation non destructive des meilleurs scores existants.
+   Temporaire : relit les preuves enregistrées à chaque ouverture de l'application.
+   Ne déduit jamais un résultat manquant d'une simple progression ou d'un score global. */
+(()=>{
+  'use strict';
+  const cfg=window.MathasAppConfig,storage=cfg?.storage;
+  if(!storage?.progression||!storage?.normal?.classic)return;
+  const read=k=>{try{return k?JSON.parse(localStorage.getItem(k)||'null'):null}catch{return null}};
+  const write=(k,data)=>{try{localStorage.setItem(k,JSON.stringify(data));return true}catch{return false}};
+  const appId=String(cfg.appId||'application').replace(/[^\w-]/g,'_');
+  const trophyKey='mathas_trophies_v3_'+appId;
+  const rawBest=read(storage.normal.classic)||{},normal=Array.from({length:3},()=>({4:false,10:false,20:false}));
+  const qualified=[false,false,false],perfect=[false,false,false];
+  const countValid=new Set([4,10,20]);
+  let found=0;
+  function register(level,total,score){
+    level=Number(level);total=Number(total);score=Number(score);
+    if(!Number.isInteger(level)||level<1||level>3||!countValid.has(total)||
+      !Number.isInteger(score)||score<0||score>total)return;
+    if(score===total){normal[level-1][total]=true;found++}
+    if((total===10&&score>=8)||(total===20&&score>=16))qualified[level-1]=true;
+    if((total===10||total===20)&&score===total)perfect[level-1]=true;
+  }
+  const family=String(cfg.family||'');
+  if(family==='addition'||family==='subtraction'){
+    // Les trois scores 4/10/20 ont historiquement été stockés séparément par niveau.
+    // Pour une ancienne soustraction, les clés plates correspondent à la série de 20.
+    const groups=(rawBest?.addBottom||rawBest?.takeTop)
+      ?[rawBest.addBottom||{},rawBest.takeTop||{}]:[rawBest];
+    for(const group of groups)if(group&&typeof group==='object')
+      for(const [digitKey,row] of Object.entries(group)){
+        const level=Number(digitKey)===3?1:Number(digitKey)===5?2:Number(digitKey)===7?3:0;
+        if(!level)continue;
+        if(row&&typeof row==='object')for(const n of [4,10,20]){
+          const value=row[n];if(value!==undefined&&value!==null)register(level,n,value);
+        }else if(row!==undefined&&row!==null)register(level,20,row);
+      }
+  }else if(family==='mixed'||family==='multiplication'){
+    // Certaines anciennes versions ne conservent qu'UN meilleur score par niveau.
+    // On ne restaure que la longueur effectivement inscrite dans cet enregistrement.
+    for(const [key,row] of Object.entries(rawBest||{})){
+      const lvl=Number(String(key).split('|')[0]);
+      if(!Number.isInteger(lvl)||lvl<1||lvl>3||!row||typeof row!=='object')continue;
+      register(lvl,Number(row.total),row.score);
+    }
+  }
+  // Preuve supplémentaire : la dernière partie terminée, quand elle porte explicitement
+  // le label "Calculs · Niveau ..." (jamais un exercice guidé ou une mort subite).
+  const last=read(storage.lastWork)||{};
+  if(/^Calculs\s*[·\-]\s*Niveau\s*[123]\b/i.test(String(last.label||''))){
+    const level=Number(String(last.label).match(/Niveau\s*([123])/i)?.[1]);
+    const score=String(last.score||'').match(/^(\d+)\s*\/\s*(4|10|20)$/);
+    if(score)register(level,Number(score[2]),Number(score[1]));
+  }
+  // Un second ancien stockage ne conserve que le dernier et le meilleur résultat
+  // global de l'application : on récupère ces parties si le mode est explicitement
+  // classique. Cela sauve parfois un 10/10 écrasé dans le record par niveau.
+  const globalHistory=read('mathas_scores_'+window.location.pathname.toLowerCase());
+  for(const candidate of [globalHistory?.dernier,globalHistory?.meilleur])if(candidate){
+    const label=String(candidate.niveau||'');
+    const level=Number(candidate.niveauRang>=1&&candidate.niveauRang<=3
+      ?candidate.niveauRang:label.match(/Niveau\s*([123])/i)?.[1]);
+    if(/Niveau\s*[123]/i.test(label)&&Number.isInteger(level))
+      register(level,Number(candidate.total),candidate.score);
+  }
+  const rawProgress=read(storage.progression);
+  const progress=rawProgress&&typeof rawProgress==='object'?{...rawProgress}:{};
+  const oldP=JSON.stringify(progress);
+  for(let i=0;i<3;i++){
+    if(perfect[i])progress['perfect'+(i+1)]=true;
+    if(qualified[i])progress['sudden'+(i+1)]=true;
+  }
+  if(qualified[0])progress.level2=true;
+  if(qualified[1])progress.level3=true;
+  if(progress.level2)progress.sudden1=true;
+  if(progress.level3)progress.sudden2=true;
+  if(progress.perfect3)progress.sudden3=true;
+  if(progress.perfect1&&progress.perfect2&&progress.perfect3)progress.hard=true;
+  if(JSON.stringify(progress)!==oldP)write(storage.progression,progress);
+
+  // Préserver les médailles existantes, y compris si elles sont encore sous un ancien schéma.
+  const rawT=read(trophyKey)||read('mathas_trophies_v2_'+appId)||read('mathas_trophies_v1_'+appId)||{};
+  const trophy={...rawT,version:3,
+    mastery:{4:[false,false,false],10:[false,false,false],20:[false,false,false]},
+    sudden:Array.isArray(rawT.sudden)?rawT.sudden.slice(0,3):[false,false,false],
+    hardAwards:{bronze:[false,false,false],silver:[false,false,false],gold:[false,false,false]},
+    scoreOne:{bronze:false,silver:false,gold:false},
+    unlockedGold:rawT.unlockedGold===true};
+  let repaired=0;
+  for(const n of [4,10,20])for(let i=0;i<3;i++){
+    const was=rawT.mastery?.[n]?.[i]===true;
+    trophy.mastery[n][i]=was||normal[i][n];
+    if(!was&&normal[i][n])repaired++;
+  }
+  const normalSudden=read(storage.normal.sudden)||{};
+  for(let i=0;i<3;i++){
+    let v=0;
+    if(family==='addition'||family==='subtraction')v=Number(normalSudden[[3,5,7][i]]);
+    else if(family==='multiplication'&&appId==='multiplication-simple'){
+      for(const [key,score] of Object.entries(normalSudden))
+        if(Number(String(key).split('|')[0])===i+1)v=Math.max(v,Number(score)||0);
+    }else v=Number(normalSudden[String(i+1)]?.score??normalSudden[String(i+1)]);
+    if(Number.isFinite(v)&&v>=25&&!trophy.sudden[i]){trophy.sudden[i]=true;repaired++}
+  }
+  for(const color of ['bronze','silver','gold']){
+    const arr=Array.isArray(rawT.hardAwards?.[color])?rawT.hardAwards[color]:[];
+    trophy.hardAwards[color]=[0,1,2].map(i=>arr[i]===true);
+    trophy.scoreOne[color]=rawT.scoreOne?.[color]===true;
+  }
+  // Les records HARD anciens constituent aussi une preuve objective de séries réussies.
+  const h=read(storage.hardRecords)||{},thresholds={bronze:3,silver:5,gold:10};
+  for(let i=0;i<3;i++){
+    const best=Number(h[String(i+1)]?.score??h[String(i+1)]);
+    if(!Number.isFinite(best))continue;
+    for(const [color,minimum] of Object.entries(thresholds))if(best>=minimum&&!trophy.hardAwards[color][i]){
+      trophy.hardAwards[color][i]=true;repaired++;
+    }
+  }
+  const oldT=JSON.stringify(rawT);
+  if(repaired||Object.keys(rawT).length&&JSON.stringify(trophy)!==oldT)write(trophyKey,trophy);
+  window.MathasTransition={version:'V5.3.4T',proofCount:found,recovered:repaired,
+    progressionRepaired:JSON.stringify(progress)!==oldP};
 })();
 </script>
 <script id="mathas-level-menu-viewport">
@@ -8238,7 +8412,14 @@ body.light-mode main.app > header .app-version-pill, body.light-mode .app > head
       pill.className='app-version-pill';
       brandRow.appendChild(pill);
     }
-    if(versionText) pill.textContent=versionText;
+    if(versionText){
+      const parts=versionText.match(/^(V\d+)(.*)$/);
+      if(parts){pill.innerHTML='';const main=document.createElement('span'),detail=document.createElement('span');
+        main.className='mathas-version-main';main.textContent=parts[1];
+        detail.className='mathas-version-detail';detail.textContent=parts[2];
+        pill.append(main,detail);
+      }else pill.textContent=versionText;
+    }
     const subtitleRow=header.querySelector('.subtitle-row');
     if(subtitleRow) subtitleRow.style.display='none';
   }
@@ -10440,6 +10621,51 @@ makeUI();render();syncUnlockGold();setInterval(watch,650);document.addEventListe
 })();
 </script>
 
+<style id="mathas-v533T-version-tone">.app-version-pill .mathas-version-main{font-weight:950;color:inherit}.app-version-pill .mathas-version-detail{margin-left:1px;font-weight:750;opacity:.57}</style>
+<style id="mathas-v533T-classic-choice-halos">
+/* Le halo reprend les tons existants de chaque bouton ; 10 et 20 sont plus éclatants. */
+#menuScreen button[data-count="4"].classic-count-btn,
+#menuScreen button[data-count="4"].classic-count-btn.active,
+#menuScreen button[data-count="4"].classic-count-btn[aria-pressed="true"],
+#menuScreen button[data-count="4"].countBtn,
+#menuScreen button[data-count="4"].countBtn.active,
+#menuScreen button[data-count="4"].countBtn[aria-pressed="true"]{
+  overflow:visible!important;position:relative!important;
+  outline:1px solid rgba(170,202,231,.45)!important;outline-offset:1px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 5px 0 rgba(0,0,0,.18),
+    0 0 12px 3px rgba(130,171,210,.44),0 0 24px 8px rgba(130,171,210,.22)!important;
+}
+#menuScreen button[data-count="10"].classic-count-btn,
+#menuScreen button[data-count="10"].classic-count-btn.active,
+#menuScreen button[data-count="10"].classic-count-btn[aria-pressed="true"],
+#menuScreen button[data-count="10"].countBtn,
+#menuScreen button[data-count="10"].countBtn.active,
+#menuScreen button[data-count="10"].countBtn[aria-pressed="true"]{
+  overflow:visible!important;position:relative!important;
+  outline:2px solid rgba(115,237,164,.75)!important;outline-offset:1px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.20),0 5px 0 rgba(0,0,0,.2),
+    0 0 15px 5px rgba(60,224,137,.77),0 0 32px 12px rgba(60,224,137,.45),
+    0 0 54px 18px rgba(60,224,137,.21)!important;
+}
+#menuScreen button[data-count="20"].classic-count-btn,
+#menuScreen button[data-count="20"].classic-count-btn.active,
+#menuScreen button[data-count="20"].classic-count-btn[aria-pressed="true"],
+#menuScreen button[data-count="20"].countBtn,
+#menuScreen button[data-count="20"].countBtn.active,
+#menuScreen button[data-count="20"].countBtn[aria-pressed="true"]{
+  overflow:visible!important;position:relative!important;
+  outline:2px solid rgba(255,210,99,.83)!important;outline-offset:1px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.21),0 5px 0 rgba(0,0,0,.2),
+    0 0 16px 5px rgba(250,178,55,.82),0 0 34px 12px rgba(250,178,55,.48),
+    0 0 57px 19px rgba(250,178,55,.24)!important;
+}
+#menuScreen button[data-count="4"].classic-count-btn:hover,#menuScreen button[data-count="4"].countBtn:hover,
+#menuScreen button[data-count="10"].classic-count-btn:hover,#menuScreen button[data-count="10"].countBtn:hover,
+#menuScreen button[data-count="20"].classic-count-btn:hover,#menuScreen button[data-count="20"].countBtn:hover{
+  filter:brightness(1.15)!important;
+}
+@media(prefers-reduced-motion:reduce){#menuScreen button[data-count].classic-count-btn,#menuScreen button[data-count].countBtn{transition:none!important}}
+</style>
 </body>
 </html>
 
@@ -11621,7 +11847,7 @@ body.light #mathasTrophiesStrip.is-platinum .mathas-platinum-caption,body.light-
 
 
 <style id="mathas-v530-refinements">
-/* V5.3.1 : halos des cartes d'action suivant la véritable couleur des bordures,
+/* V5.3.4T : halos des cartes d'action suivant la véritable couleur des bordures,
    sans modifier les couleurs des six applications ni perturber les clics. */
 html body #menuScreen .mode-card.classic.mode-card,
 html body #menuScreen .mode-card.sudden.mode-card {
@@ -11704,7 +11930,7 @@ body.light-mode #mathasTrophiesStrip .mathas-platinum-progress{color:#315a81}
 
 
 <style id="mathas-v531-action-halos-and-score-placement">
-/* V5.3.1 : halo nettement renforcé, de la couleur actuelle du cadre.
+/* V5.3.4T : halo nettement renforcé, de la couleur actuelle du cadre.
    La bordure colorée reste la référence : ne crée aucune nouvelle palette. */
 html body #menuScreen .mode-card.classic.mode-card,
 html body #menuScreen .mode-card.sudden.mode-card{
