@@ -4895,6 +4895,14 @@ function enregistrerResultatMathas(score, total, niveau, niveauRang) {
   }
 
   localStorage.setItem(key, JSON.stringify(donnees));
+  // Pont opt-in : ne remplace jamais l'enregistrement local.
+  try {
+    window.dispatchEvent(new CustomEvent('mathas:completed-activity', {
+      detail: {score, total, levelKey: niveau, levelRank: niveauRang,
+        mode: window.MathasSchoolBridgeMode || 'unknown',
+        aidUsed: !!window.MathasSchoolBridgeAidUsed}
+    }));
+  } catch (_) { /* aucune incidence sur la partie */ }
 }
 
 
@@ -5414,7 +5422,7 @@ function enregistrerResultatMathas(score, total, niveau, niveauRang) {
           lockCalc(i);status(i,'Correct','ok');session.score++;session.completed++;newly++;saveSuddenBest()
         }else{
           markErrorsForCorrection(i);phase='ended';setNumpadDisabled(true);resetBtn.disabled=true;setPrimaryLabel('Retour au menu');
-          saveSuddenBest();window.__setLastWork&&window.__setLastWork({label:`Mort subite · Niveau ${session.level}`,score:String(session.score),rulerUsed:!!session.rulerUsed});enregistrerResultatMathas(session.score,session.score+1,`Niveau ${session.level}`,session.level);status(i,'Erreur : partie terminée','bad');setFeedback(`Mort subite terminée. Score : ${session.score}.`,'bad');updateBar();return
+          saveSuddenBest();window.__setLastWork&&window.__setLastWork({label:`Mort subite · Niveau ${session.level}`,score:String(session.score),rulerUsed:!!session.rulerUsed});window.MathasSchoolBridgeMode='sudden'; window.MathasSchoolBridgeAidUsed=!!session.rulerUsed; enregistrerResultatMathas(session.score,session.score+1,`Niveau ${session.level}`,session.level);status(i,'Erreur : partie terminée','bad');setFeedback(`Mort subite terminée. Score : ${session.score}.`,'bad');updateBar();return
         }
       }
       if(states.every(s=>s.solved)){
@@ -5524,6 +5532,7 @@ function enregistrerResultatMathas(score, total, niveau, niveauRang) {
     phase='ended';setNumpadDisabled(true);resetBtn.disabled=true;setPrimaryLabel('Retour au menu');
     setFeedback(isRecord?`Nouveau record : ${session.score}/${session.totalCalculs} !`:`Série terminée : ${session.score}/${session.totalCalculs}.`,'ok');
     window.__setLastWork&&window.__setLastWork({label:`Calculs · Niveau ${session.level}`,score:`${session.score}/${session.totalCalculs}`,rulerUsed:!!session.rulerUsed});
+    window.MathasSchoolBridgeMode='classic'; window.MathasSchoolBridgeAidUsed=!!session.rulerUsed;
     enregistrerResultatMathas(session.score,session.totalCalculs,`Niveau ${session.level}`,session.level);
     updateBar();isRecord?showRecordCelebration(session.score,session.totalCalculs):showScoreCelebration(session.score,session.totalCalculs,old)
   }
@@ -6612,7 +6621,7 @@ function hardThreeScore(level){
             label:`HARD NIV ${hardSession.level} · 5 calculs`,
             score:`${hardSession.score}/5`
           });
-          enregistrerResultatMathas(hardSession.score,5,`Hard ${hardSession.level}`,3+hardSession.level);
+          window.MathasSchoolBridgeMode='hard_challenge'; window.MathasSchoolBridgeAidUsed=false; enregistrerResultatMathas(hardSession.score,5,`Hard ${hardSession.level}`,3+hardSession.level);
           hardPhase='ended';setHardEnabled(false);clearBtn.disabled=true;
           primary.textContent='Retour au menu HARD';
           const perfect=hardSession.score===5;
@@ -6641,7 +6650,7 @@ function hardThreeScore(level){
 
     markHardErrors();
     if(hardSession.mode==='sudden'){
-      saveBest();window.__setLastWork&&window.__setLastWork({label:`HARD NIV ${hardSession.level} · Mort subite · ${hardSession.digits} chiffres`,score:String(hardSession.score)});enregistrerResultatMathas(hardSession.score,hardSession.score+1,`Hard ${hardSession.level}`,3+hardSession.level);hardPhase='ended';setHardEnabled(false);clearBtn.disabled=true;
+      saveBest();window.__setLastWork&&window.__setLastWork({label:`HARD NIV ${hardSession.level} · Mort subite · ${hardSession.digits} chiffres`,score:String(hardSession.score)});window.MathasSchoolBridgeMode='hard_sudden'; window.MathasSchoolBridgeAidUsed=false; enregistrerResultatMathas(hardSession.score,hardSession.score+1,`Hard ${hardSession.level}`,3+hardSession.level);hardPhase='ended';setHardEnabled(false);clearBtn.disabled=true;
       primary.textContent='Retour au menu HARD';
       setFeedback(`Erreur : Mort subite terminée. Score : ${hardSession.score}.`,'bad');
       updateHardHeader()
@@ -11025,6 +11034,7 @@ body.light #masterModePanel .master-aid-option {color:#224054!important}
 body.light .tens-first-option,body.light-mode .tens-first-option{background:rgba(46,137,207,.11)!important;border:1px solid rgba(52,132,195,.43)!important}
 body.light .tens-first-option:hover,body.light-mode .tens-first-option:hover{background:rgba(46,137,207,.18)!important}
 </style>
+<script src="./mathas-school-bridge.js" defer></script>
 </body>
 </html>
 
