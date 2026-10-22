@@ -30,6 +30,10 @@ async function submitCompletedActivity(event){
 }
 async function init(){
  if(!ticket)return;
+ // Retirer le ticket de l'adresse avant tout appel réseau et avant le chargement d'autres pages.
+ const cleanUrl=new URL(w.location.href);
+ cleanUrl.searchParams.delete('mathas_lab_ticket');
+ w.history.replaceState(w.history.state,'',cleanUrl.pathname+cleanUrl.search+cleanUrl.hash);
  // A copied game URL without the student's authenticated browser is inert.
  try{
   if(!w.supabase?.createClient)throw Error('supabase_js_absent');
@@ -38,7 +42,6 @@ async function init(){
   secret=v.launchSecret;
   state.student=v.student;
   state.mode='eleve';
-  w.history.replaceState(w.history.state,'',w.location.pathname+w.location.search.replace(/([?&])mathas_lab_ticket=[^&]*&?/,'$1').replace(/[?&]$/,'')+w.location.hash);
  }catch(e){state.error=String(e.message||e);}
  finally{state.ready=true;}
 }
